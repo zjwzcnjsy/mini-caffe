@@ -14,7 +14,7 @@ Mini-Caffe now can be corss compiled for Android platform.
 Run `build.sh` will automatically cross compile Mini-Caffe and libraries(protobuf and OpenBLAS) it relies on. The default build option is listed below, currently you can directly change them in `build.sh` file.
 
 ```
-ANDROID_NATIVE_API_LEVEL=21  # android native api level
+ANDROID_NATIVE_API_LEVEL=14  # android native api level
 ANDROID_BUILD_JOBS=2  # threads to build
 ANDROID_ABIS=(armeabi-v7a arm64-v8a armeabi x86 x86_64)  # android abi to build
 ```
