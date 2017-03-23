@@ -13,7 +13,7 @@ THIRD_PARTY_ROOT=$ANDROID_ROOT/../3rdparty/src
 ANDROID_TOOLCHAIN_FILE=$ANDROID_ROOT/android-cmake/android.toolchain.cmake
 ANDROID_NATIVE_API_LEVEL=14
 ANDROID_BUILD_JOBS=2
-ANDROID_ABIS=(armeabi-v7a arm64-v8a armeabi x86 x86_64)
+ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)
 MINICAFFE_JNILIBS=$ANDROID_ROOT/jniLibs
 
 echo "Android Build Root: $ANDROID_ROOT"
@@ -172,11 +172,6 @@ function build_minicaffe {
 
 # build protobuf for host
 build_protobuf_host
-
-# apply patch to OpenBLAS
-cd $THIRD_PARTY_ROOT/OpenBLAS
-git checkout .
-git apply --whitespace=fix $ANDROID_ROOT/OpenBLAS.patch
 
 for ANDROID_ABI in ${ANDROID_ABIS[@]}; do
     echo "Build for $ANDROID_ABI"
