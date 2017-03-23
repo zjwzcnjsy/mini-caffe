@@ -16,8 +16,10 @@ Run `build.sh` will automatically cross compile Mini-Caffe and libraries(protobu
 ```
 ANDROID_NATIVE_API_LEVEL=21  # android native api level
 ANDROID_BUILD_JOBS=2  # threads to build
-ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)  # android abi to build
+ANDROID_ABIS=(armeabi-v7a arm64-v8a armeabi x86 x86_64)  # android abi to build
 ```
+
+**Notice**: armeabi-v7a force to build OpenBLAS with `-mfloat-abi=softfp -mfpu=neon`.
 
 `build.sh` is tested on Ubuntu 16.04 with Android NDK r13b, Windows 10 with tdmgcc64-gcc-5.1.0-2.exe and Android NDK r12b.
 

@@ -13,7 +13,7 @@ THIRD_PARTY_ROOT=$ANDROID_ROOT/../3rdparty/src
 ANDROID_TOOLCHAIN_FILE=$ANDROID_ROOT/android-cmake/android.toolchain.cmake
 ANDROID_NATIVE_API_LEVEL=21
 ANDROID_BUILD_JOBS=2
-ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)
+ANDROID_ABIS=(armeabi-v7a arm64-v8a armeabi x86 x86_64)
 MINICAFFE_JNILIBS=$ANDROID_ROOT/jniLibs
 
 echo "Android Build Root: $ANDROID_ROOT"
@@ -68,9 +68,14 @@ function build_protobuf {
     mkdir -p $PROTOBUF_INSTALL_ROOT
     mkdir -p $PROTOBUF_BUILD_ROOT
     cd $PROTOBUF_BUILD_ROOT
+    ABI=$ANDROID_ABI
+    if [ $ANDROID_ABI = "armeabi-v7a" ]; then
+        # use neon
+        ABI="armeabi-v7a with NEON"
+    fi
     cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE \
           -DANDROID_NDK=$NDK_ROOT \
-          -DANDROID_ABI=$ANDROID_ABI \
+          -DANDROID_ABI="${ABI}" \
           -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
           -DCMAKE_INSTALL_PREFIX=$PROTOBUF_INSTALL_ROOT \
           -DCMAKE_BUILD_TYPE=Release \
@@ -101,6 +106,11 @@ function build_openblas {
         CROSS_SUFFIX=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/arm-linux-androideabi-
         SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-arm
         TARGET=ARMV5
+        BINARY=32
+    elif [ "$ANDROID_ABI" = "armeabi-v7a" ]; then
+        CROSS_SUFFIX=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/arm-linux-androideabi-
+        SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-arm
+        TARGET=ARMV7
         BINARY=32
     elif [ "$ANDROID_ABI" = "x86" ]; then
         CROSS_SUFFIX=$NDK_ROOT/toolchains/x86-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/i686-linux-android-
@@ -144,9 +154,14 @@ function build_minicaffe {
     $PROTOC -I="$MINICAFFE_ROOT/src/proto" \
             --cpp_out="$MINICAFFE_ROOT/src/proto" \
             "$MINICAFFE_ROOT/src/proto/caffe.proto"
+    ABI=$ANDROID_ABI
+    if [ $ANDROID_ABI = "armeabi-v7a" ]; then
+        # use neon
+        ABI="armeabi-v7a with NEON"
+    fi
     cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE \
           -DANDROID_NDK=$NDK_ROOT \
-          -DANDROID_ABI=$ANDROID_ABI \
+          -DANDROID_ABI="${ABI}" \
           -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
           -DCMAKE_BUILD_TYPE=Release \
           -DANDROID_EXTRA_LIBRARY_PATH=$ANDROID_ROOT/$ANDROID_ABI-install \
@@ -157,6 +172,11 @@ function build_minicaffe {
 
 # build protobuf for host
 build_protobuf_host
+
+# apply patch to OpenBLAS
+cd $THIRD_PARTY_ROOT/OpenBLAS
+git checkout .
+git apply $ANDROID_ROOT/OpenBLAS.patch
 
 for ANDROID_ABI in ${ANDROID_ABIS[@]}; do
     echo "Build for $ANDROID_ABI"
